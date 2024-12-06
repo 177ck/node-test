@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원 가입 및 로그인</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(45deg, #A0D8FF, #B2E1F6); /* 파스텔 푸른 그라데이션 배경 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+            flex-direction: column; /* 세로로 정렬 */
+        }
+
+        .title-container {
+            background-color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 1000px; /* 가로 1000px */
+            height: 127px; /* 세로 127px */
+            margin-bottom: 30px; /* 아래에 폼을 추가할 여백 */
+        }
+
+        .title-container h1 {
+            font-size: 32px;
+            color: #3B8C9B;
+            margin-bottom: 10px;
+        }
+
+        .title-container p {
+            font-size: 18px;
+            color: #3B8C9B;
+        }
+
+        form {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #3B8C9B;
+            margin-bottom: 20px;
+        }
+
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #B2E1F6;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="email"]:focus, input[type="password"]:focus {
+            border-color: #A0D8FF;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background-color: #A0D8FF;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #B2E1F6;
+        }
+
+        .secondary-btn {
+            background-color: transparent;
+            border: 1px solid #A0D8FF;
+            color: #A0D8FF;
+            margin-top: 10px;
+        }
+
+        .secondary-btn:hover {
+            background-color: #A0D8FF;
+            color: white;
+        }
+
+        @media screen and (max-width: 500px) {
+            form {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            input[type="email"], input[type="password"], button {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 제목 및 부제목을 넣은 상자 (회원가입 폼 위에 위치)-->
+    <div class="title-container">
+        <h1>도서 추천 및 독서 관리 시스템</h1>
+        <p>독서 목표를 설정하고, 기분에 따라 책을 추천받아 읽은 책을 기록할 수 있는 시스템입니다.</p>
+    </div>
+
+    <!-- 회원가입 폼 -->
+    <form id="signUpForm">
+        <h1>회원가입</h1>
+        <div>
+            <input type="email" id="signUpEmail" placeholder="이메일을 입력하세요" required/>
+        </div>
+        <div>
+            <input type="password" id="signUpPassword" placeholder="비밀번호를 입력하세요" required/>
+        </div>
+        <button type="submit" id="signUpButton">회원가입 하기</button>
+        <button type="button" class="secondary-btn" id="goToLoginBtn">로그인 하러 가기</button>
+    </form>
+
+    <!-- 로그인 폼 -->
+    <form id="signInForm" style="display:none;">
+        <h1>로그인</h1>
+        <div>
+            <input type="email" id="signInEmail" placeholder="이메일을 입력하세요" required/>
+        </div>
+        <div>
+            <input type="password" id="signInPassword" placeholder="비밀번호를 입력하세요" required/>
+        </div>
+        <button type="submit" id="signInButton">로그인 하기</button>
+        <button type="button" class="secondary-btn" id="goToSignUpBtn">회원가입 하러 가기</button>
+    </form>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAOAdcEmx695ZIRneuHY0MAdrBlLxcaZ10",
+            authDomain: "test-3f04a.firebaseapp.com",
+            databaseURL: "https://test-3f04a-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "test-3f04a",
+            storageBucket: "test-3f04a.firebasestorage.app",
+            messagingSenderId: "836820236917",
+            appId: "1:836820236917:web:4165f4b744a25084a3963c",
+            measurementId: "G-M0XJB0HTKE"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+
+        // 회원가입 폼 처리
+        document.getElementById('signUpForm').addEventListener('submit', (event) => {
+            event.preventDefault();  // 폼 제출 기본 동작 막기
+
+            const signUpEmail = document.getElementById('signUpEmail').value;
+            const signUpPassword = document.getElementById('signUpPassword').value;
+
+            // Firebase에 회원가입 요청
+            createUserWithEmailAndPassword(auth, signUpEmail, signUpPassword)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    console.log('회원가입 성공:', user);
+                    alert('회원가입이 성공적으로 완료되었습니다!');
+                    // 회원가입 후 로그인 폼으로 전환
+                    document.getElementById('signUpForm').style.display = 'none';
+                    document.getElementById('signInForm').style.display = 'block';
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    console.error('회원가입 실패:', errorCode, errorMessage);
+                    alert(`회원가입에 실패했습니다: ${errorMessage}`);
+                });
+        });
+
+        // 로그인 폼 처리
+        document.getElementById('signInForm').addEventListener('submit', (event) => {
+            event.preventDefault();  // 폼 제출 기본 동작 막기
+
+            const signInEmail = document.getElementById('signInEmail').value;
+            const signInPassword = document.getElementById('signInPassword').value;
+
+            // Firebase에 로그인 요청
+            signInWithEmailAndPassword(auth, signInEmail, signInPassword)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    console.log('로그인 성공:', user);
+                    alert('로그인에 성공했습니다!');
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    console.error('로그인 실패:', errorCode, errorMessage);
+                    alert(`로그인에 실패했습니다: ${errorMessage}`);
+                });
+        });
+
+        // 로그인 폼으로 전환
+        document.getElementById('goToLoginBtn').addEventListener('click', () => {
+            document.getElementById('signUpForm').style.display = 'none';
+            document.getElementById('signInForm').style.display = 'block';
+        });
+
+        // 회원가입 폼으로 전환
+        document.getElementById('goToSignUpBtn').addEventListener('click', () => {
+            document.getElementById('signUpForm').style.display = 'block';
+            document.getElementById('signInForm').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
